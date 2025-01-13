@@ -20,6 +20,7 @@ import {
   ChevronDown,
   LogIn,
   LogOut,
+  Earth,
 } from "lucide-react";
 
 import { Badge } from "./ui/badge";
@@ -41,9 +42,15 @@ import {
 
 const clientId = process.env.WEB3_AUTH_CLIENT_ID;
 
+if (!clientId) {
+  throw new Error(
+    "WEB3_AUTH_CLIENT_ID is not defined. Please set the environment variable."
+  );
+}
+
 const chainConfig = {
-  chainId: CHAIN_NAMESPACES.EIP155,
-  namespace: "0xaa36a7",
+  chainNamespace: CHAIN_NAMESPACES.EIP155,
+  chainId: "0xaa36a7",
   rpcTarget: "https://rpc.ankr.com/eth_sepolia",
   displayName: "Sepolia Testnet",
   blockExplorerUrl: "https://explorer-sepolia.ankr.com/",
@@ -78,33 +85,50 @@ const Header = ({ onMenuClick, totalEarnings }: HeaderProps) => {
   const pathname = usePathname();
 
   useEffect(() => {
+    let isMounted = true; // Track if the component is mounted
+
     const init = async () => {
       try {
-        await web3auth.initModal();
-        setProvider(web3auth.provider);
+        if (!clientId) {
+          throw new Error("WEB3_AUTH_CLIENT_ID is not defined");
+        }
 
-        if (web3auth.connected) {
-          setLoggedIn(true);
-          const user = await web3auth.getUserInfo();
-          setUserInfo(user);
-          if (user.email) {
-            localStorage.setItem("userEmail", user.email);
-            try {
-              await createUser(user.email, user.name || "Anonymous User");
-            } catch (error) {
-              console.error("Error creating user:", error);
-              // Handle the error appropriately, maybe show a message to the user
+        await web3auth.initModal();
+
+        if (isMounted) {
+          setProvider(web3auth.provider);
+
+          if (web3auth.connected) {
+            setLoggedIn(true);
+            const user = await web3auth.getUserInfo();
+            setUserInfo(user);
+
+            if (user.email) {
+              localStorage.setItem("userEmail", user.email);
+              try {
+                await createUser(user.email, user.name || "Anonymous User");
+              } catch (error) {
+                console.error("Error creating user:", error);
+                // Optionally, display a user-friendly message here
+              }
             }
           }
         }
       } catch (error) {
         console.error("Error initializing Web3Auth:", error);
+        // Optionally, implement further error handling or user notifications
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     init();
+
+    return () => {
+      isMounted = false; // Cleanup function to set isMounted to false
+    };
   }, []);
 
   useEffect(() => {
@@ -216,7 +240,22 @@ const Header = ({ onMenuClick, totalEarnings }: HeaderProps) => {
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="flex items-center justify-between px-4 py-2"></div>
+      <div className="flex items-center justify-between px-4 py-2">
+        <div className="flex items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="mr-2  md:mr-4"
+            onClick={onMenuClick}
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+          <Link className="flex items-center" href="/">
+            <Earth className="h-6 w-6 text-primary md:w-8 text-green-500 mr-1 md:mr-2" />
+            <span className="text-xl font-bold">Nirmal Earth</span>
+          </Link>
+        </div>
+      </div>
     </header>
   );
 };
