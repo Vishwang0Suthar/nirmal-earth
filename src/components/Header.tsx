@@ -42,7 +42,7 @@ import {
 import useMediaQuery from "@/hooks/useMediaQuery";
 
 const clientId =
-  "BNUqr39dvvE9ZB84G0527KWWpUYqdt43naOg1Y6aRdbobIabczGfhFCzzTMUQ_Sl9ZU3S-aDqfZ13iOK1zkfFp4";
+  "BJKdDFkNtkWX87XqkuWrDu4rbkSvWyQZ5lswS0ucINxxcN0inRVW8zzKAywPPzgiOHP7_3PcfFwfpvcQvSdaLRs";
 
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
@@ -145,7 +145,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
     fetchUserBalance();
 
     // Add an event listener for balance updates
-    const handleBalanceUpdate = (event: CustomEvent) => {
+    const handleBalanceUpdate = (event: CustomEvent<number>) => {
       setBalance(event.detail);
     };
 
@@ -305,7 +305,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          <div className="flex hover:shadow-3xl duration-300 hover:shadow-green-300 items-center gap-2 bg-gray-100 rounded-full px-2 md:px-3 py-1 mr-2 md:mr-4">
+          <div className="flex border-2 border-green-800 hover:shadow-3xl duration-300 hover:shadow-green-300 items-center gap-2 bg-gray-100 rounded-full px-2 md:px-3 py-1 mr-2 md:mr-4">
             <Coins className="h-4 md:h-5 w-4 md:w-5 text-green-400" />
             <span className="text-sm font-semibold md:text-base text-gray-800">
               {balance.toFixed(2)} points
@@ -341,13 +341,11 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
                   </DropdownMenuItem>
                   <DropdownMenuItem className="px-4 py-2">
                     <span className="text-sm text-gray-500">
-                      <Link href={"/settings"}>Profile</Link>
+                      <Link href={"/settings"}>Settings</Link>
                     </span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={logout} className="px-4 py-2">
-                    <span className="text-sm text-gray-500">
-                      <Link href={"/settings"}>Sign Out</Link>
-                    </span>
+                    <span className="text-sm text-gray-500">Sign Out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
