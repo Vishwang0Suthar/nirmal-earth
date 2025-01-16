@@ -20,9 +20,8 @@ const geminiApiKey = process.env.GEMINI_API_KEY;
 const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY as any;
 
 const libraries: Libraries = ["places"];
-type Props = {};
 
-const Report = (props: Props) => {
+const Report = () => {
   const [user, setUser] = useState<{
     id: number;
     email: string;
@@ -245,14 +244,14 @@ const Report = (props: Props) => {
   }, [router]);
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="md:p-8 p-4 md:max-w-4xl max-w-sm mx-auto">
       <h1 className="text-3xl font-semibold mb-6 text-gray-800">
         Report waste
       </h1>
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-2xl shadow-lg mb-12"
+        className="bg-white md:p-8 p-4 rounded-2xl shadow-lg mb-12"
       >
         <div className="mb-8">
           <label
@@ -263,7 +262,10 @@ const Report = (props: Props) => {
           </label>
           <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-green-500 transition-colors duration-300">
             <div className="space-y-1 text-center">
-              <Upload className="mx-auto h-12 w-12 text-gray-400" />
+              <Upload
+                className="mx-auto h-8
+w-8 lg:h-12 lg:w-12 text-gray-400"
+              />
               <div className="flex text-sm text-gray-600">
                 <label
                   htmlFor="waste-image"
@@ -427,19 +429,19 @@ const Report = (props: Props) => {
       </h2>
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div className="max-h-96 overflow-y-auto">
-          <table className="w-full">
+          <table className="lg:w-full max-w-sm">
             <thead className="bg-gray-50 sticky top-0">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="lg:px-6 px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Location
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="lg:px-6 px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="lg:px-6 px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Amount
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="lg:px-6 px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
                 </th>
               </tr>
