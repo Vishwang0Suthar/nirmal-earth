@@ -38,7 +38,7 @@ import {
   getUserBalance,
   getUserByEmail,
   markNotificationAsRead,
-} from "../../utils/db/action";
+} from "../utils/db/action";
 import useMediaQuery from "@/hooks/useMediaQuery";
 
 const clientId =
