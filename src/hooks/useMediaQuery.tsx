@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 
-type Props = {};
-
 const useMediaQuery = (query: string) => {
   const [matches, setMatches] = useState(false);
 
@@ -12,9 +10,10 @@ const useMediaQuery = (query: string) => {
       setMatches(media.matches);
     }
     const listener = () => setMatches(media.matches);
-    media.addListener(listener);
+    media.addListener(listener, setMatches as EventListener);
 
-    return () => media.removeEventListener(listener);
+    return () =>
+      media.removeEventListener(listener, setMatches as EventListener);
   }, [matches, query]);
 
   return matches;
