@@ -12,9 +12,10 @@ const useMediaQuery = (query: string) => {
       setMatches(media.matches);
     }
     const listener = () => setMatches(media.matches);
-    media.addListener(listener);
+    media.addListener(listener, setMatches as EventListener);
 
-    return () => media.removeEventListener(listener);
+    return () =>
+      media.removeEventListener(listener, setMatches as EventListener);
   }, [matches, query]);
 
   return matches;
