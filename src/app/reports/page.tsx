@@ -20,9 +20,8 @@ const geminiApiKey = process.env.GEMINI_API_KEY;
 const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY as any;
 
 const libraries: Libraries = ["places"];
-type Props = {};
 
-const Report = (props: Props) => {
+const Report = () => {
   const [user, setUser] = useState<{
     id: number;
     email: string;

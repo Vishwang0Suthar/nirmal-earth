@@ -4,8 +4,6 @@ import { Coins, Home, MapPin, Medal, Settings, Trash } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 
-type Props = {};
-
 const sideBarItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/reports", label: "Report Waste", icon: MapPin },
