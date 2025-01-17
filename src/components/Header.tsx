@@ -80,10 +80,18 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [balance, setBalance] = useState(0);
 
-  console.log("user info", userInfo);
+  // console.log("user info", userInfo);
 
   useEffect(() => {
     const init = async () => {
+      const storedEmail = localStorage.getItem("userEmail"); // Check if user exists in localStorage
+
+      if (storedEmail) {
+        setLoggedIn(true);
+        setLoading(false);
+        return; // Exit early if user is already stored
+      }
+
       try {
         await web3auth.initModal();
         setProvider(web3auth.provider);
@@ -92,13 +100,13 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
           setLoggedIn(true);
           const user = await web3auth.getUserInfo();
           setUserInfo(user);
+
           if (user.email) {
-            localStorage.setItem("userEmail", user.email);
+            localStorage.setItem("userEmail", user.email); // Store user email
             try {
-              await createUser(user.email, user.name || "Anonymous User");
+              await createUser(user.email, user.name || "Anonymous User"); // Create user only if not stored
             } catch (error) {
               console.error("Error creating user:", error);
-              // Handle the error appropriately, maybe show a message to the user
             }
           }
         }

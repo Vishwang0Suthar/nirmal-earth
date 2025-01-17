@@ -14,7 +14,7 @@ export const Reports = pgTable('reports', {
     user_id: integer('user_id').notNull().references(()=> Users.id),
     location: text('location').notNull(),
     wasteType: varchar('wasteType',{length:255}).notNull(),
-    amount: integer('amount').notNull(),
+    amount: text('amount').notNull(),
     imageUrl:text('imageUrl'),
     verificationResult: jsonb('verificationResult'),
     status: varchar('status',{length:255}).notNull().default('pending'),
@@ -26,6 +26,7 @@ export const Rewards = pgTable('rewards', {
     id: serial('id').primaryKey(),
     user_id: integer('user_id').notNull().references(()=> Users.id),
     points: integer('points').notNull().default(0),
+    level: integer("level").notNull().default(1),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     isAvailable: boolean('isAvailable').notNull().default(true),
@@ -43,7 +44,7 @@ export const CollectedWastes = pgTable('collected-waste',{
 
 export const Notifications = pgTable('notifications',{
     id: serial('id').primaryKey(),
-    userId: integer('userId').notNull().references(()=> Users.id),
+    user_id: integer('user_id').notNull().references(()=> Users.id),
     message: text('message').notNull(),
     type: varchar('type',{length:255}).notNull(),
     isRead: boolean('isRead').notNull().default(false),
@@ -52,7 +53,7 @@ export const Notifications = pgTable('notifications',{
 
 export const Transactions = pgTable('transactions',{
     id: serial('id').primaryKey(),
-    userId: integer('userId').notNull().references(()=> Users.id),
+    user_id: integer('user_id').notNull().references(()=> Users.id),
     type: varchar('type',{length:20}).notNull(),
     amount: integer('amount').notNull(),
     description: text('description').notNull(),

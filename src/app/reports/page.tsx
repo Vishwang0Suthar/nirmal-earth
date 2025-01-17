@@ -18,7 +18,12 @@ import { toast } from "react-hot-toast";
 
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY as any;
-
+const NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org/search?";
+const params = {
+  q: "",
+  format: "json",
+  addressdetails: "addressdetails",
+};
 const libraries: Libraries = ["places"];
 
 const Report = () => {
@@ -28,21 +33,23 @@ const Report = () => {
     name: string;
   } | null>(null);
   const router = useRouter();
-
+  const [searchText, setSearchText] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
   const [reports, setReports] = useState<
     Array<{
       id: number;
       location: string;
       wasteType: string;
-      amount: string;
-      createdAt: string;
+      amount: number;
+      created_at: string;
     }>
   >([]);
-
+  const [focus, setFocus] = useState(false);
   const [newReport, setNewReport] = useState({
     location: "",
     type: "",
     amount: "",
+    additionalInstructions: "",
   });
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -57,37 +64,53 @@ const Report = () => {
   } | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [debouncedSearchText, setDebouncedSearchText] = useState(""); // Debounced value
 
-  const [searchBox, setSearchBox] =
-    useState<google.maps.places.SearchBox | null>(null);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchText(searchText);
+    }, 500);
 
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: googleMapsApiKey,
-    libraries: libraries,
-  });
-  const onLoad = useCallback((ref: google.maps.places.SearchBox) => {
-    setSearchBox(ref);
-  }, []);
+    return () => clearTimeout(handler); // Cleanup timeout on each keystroke
+  }, [searchText]);
 
-  const onPlacesChanged = () => {
-    if (searchBox) {
-      const places = searchBox.getPlaces();
-      if (places && places.length > 0) {
-        const place = places[0];
-        setNewReport((prev) => ({
-          ...prev,
-          location: place.formatted_address || "",
-        }));
-      }
+  useEffect(() => {
+    if (debouncedSearchText.length > 2) {
+      const fetchLocations = async () => {
+        const response = await fetch(
+          `${NOMINATIM_BASE_URL}q=${debouncedSearchText}&format=json&addressdetails=1`
+        );
+        const data = await response.json();
+        setSuggestions(data);
+      };
+
+      fetchLocations();
+    } else {
+      setSuggestions([]);
     }
+  }, [debouncedSearchText]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    if (name === "location") {
+      setSearchText(value); // Update search text for location
+    }
+
+    setNewReport((prev) => ({
+      ...prev,
+      [name]: value, // Update the correct field dynamically
+    }));
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setNewReport({ ...newReport, [name]: value });
+  const handleSelectLocation = (location: any) => {
+    setSearchText(location.display_name);
+    setNewReport((prev) => ({
+      ...prev, // Preserve existing fields
+      location: location.display_name, // Update only location
+    }));
+    setSearchText(location.display_name);
+    setSuggestions([]); // Clear suggestions after selection
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,12 +135,19 @@ const Report = () => {
   };
 
   const handleVerify = async () => {
-    if (!file) return;
+    if (!file) {
+      toast.error("Please upload an image first");
+      return;
+    }
 
     setVerificationStatus("verifying");
 
     try {
-      const genAI = new GoogleGenerativeAI(geminiApiKey!);
+      if (!geminiApiKey) {
+        throw new Error("API key is not configured");
+      }
+
+      const genAI = new GoogleGenerativeAI(geminiApiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
       const base64Data = await readFileAsBase64(file);
@@ -145,34 +175,46 @@ const Report = () => {
 
       const result = await model.generateContent([prompt, ...imageParts]);
       const response = await result.response;
-      const text = response.text();
+      const text = response.text(); // This returns the text directly, no need to test truthiness
 
       try {
-        const cleanText = text.replace(/```json|```/g, "").trim(); // Remove Markdown fencing
+        const cleanText = text.replace(/```json|```/g, "").trim();
         const parsedResult = JSON.parse(cleanText);
-        if (
-          parsedResult.wasteType &&
-          parsedResult.quantity &&
-          parsedResult.confidence
-        ) {
-          setVerificationResult(parsedResult);
-          setVerificationStatus("success");
-          setNewReport({
-            ...newReport,
-            type: parsedResult.wasteType,
-            amount: parsedResult.quantity,
-          });
-        } else {
-          console.error("Invalid verification result:", parsedResult);
-          setVerificationStatus("failure");
+
+        if (!parsedResult || typeof parsedResult !== "object") {
+          throw new Error("Invalid response format");
         }
+
+        if (
+          !parsedResult.wasteType ||
+          !parsedResult.quantity ||
+          typeof parsedResult.confidence !== "number"
+        ) {
+          throw new Error("Missing required fields in verification result");
+        }
+
+        setVerificationResult(parsedResult);
+        setVerificationStatus("success");
+        setNewReport((prev) => ({
+          ...prev,
+          type: parsedResult.wasteType,
+          amount: parsedResult.quantity,
+        }));
+
+        toast.success("Waste verification successful!");
       } catch (error) {
-        console.error("Failed to parse JSON response:", text);
+        console.error("Failed to parse verification result:", error);
         setVerificationStatus("failure");
+        toast.error("Failed to process verification result. Please try again.");
       }
     } catch (error) {
       console.error("Error verifying waste:", error);
       setVerificationStatus("failure");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to verify waste. Please try again."
+      );
     }
   };
 
@@ -190,6 +232,7 @@ const Report = () => {
         newReport.location,
         newReport.type,
         newReport.amount,
+        newReport.additionalInstructions,
         preview || undefined,
         verificationResult ? JSON.stringify(verificationResult) : undefined
       )) as any;
@@ -199,11 +242,16 @@ const Report = () => {
         location: report.location,
         wasteType: report.wasteType,
         amount: report.amount,
-        createdAt: report.createdAt.toISOString().split("T")[0],
+        created_at: report.created_at.toISOString().split("T")[0],
       };
 
       setReports([formattedReport, ...reports]);
-      setNewReport({ location: "", type: "", amount: "" });
+      setNewReport({
+        location: "",
+        type: "",
+        amount: "",
+        additionalInstructions: "",
+      });
       setFile(null);
       setPreview(null);
       setVerificationStatus("idle");
@@ -224,16 +272,18 @@ const Report = () => {
     const checkUser = async () => {
       const email = localStorage.getItem("userEmail");
       if (email) {
-        let user = await getUserByEmail(email);
-        if (!user) {
-          user = await createUser(email, "Anonymous User");
-        }
+        const user = await getUserByEmail(email);
+        console.log("user logged with email", email);
+        // if (!user) {
+        //   user = await createUser(email, "Anonymous User");
+        // }
         setUser(user);
+        console.log("user logged with email", email);
 
         const recentReports = await getRecentReports();
         const formattedReports = recentReports.map((report) => ({
           ...report,
-          createdAt: report.createdAt.toISOString().split("T")[0],
+          created_at: report.created_at.toISOString().split("T")[0],
         }));
         setReports(formattedReports);
       } else {
@@ -241,7 +291,7 @@ const Report = () => {
       }
     };
     checkUser();
-  }, [router]);
+  }, []);
 
   return (
     <div className="md:p-8 p-4 md:max-w-4xl max-w-sm mx-auto">
@@ -336,39 +386,63 @@ w-8 lg:h-12 lg:w-12 text-gray-400"
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div>
+          <div className="relative">
             <label
               htmlFor="location"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               Location
             </label>
-            {isLoaded ? (
-              <StandaloneSearchBox
-                onLoad={onLoad}
-                onPlacesChanged={onPlacesChanged}
-              >
-                <SearchBox
-                  accessToken="YOUR_MAPBOX_ACCESS_TOKEN"
-                  options={{
-                    language: "en",
-                    country: "US",
-                  }}
-                />
-              </StandaloneSearchBox>
-            ) : (
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={newReport.location}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
-                placeholder="Enter waste location"
-              />
+            <input
+              type="text"
+              id="location"
+              name="location"
+              onFocus={() => setFocus(true)}
+              onBlur={() => setFocus(false)}
+              value={searchText}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
+              placeholder="Enter waste location"
+            />
+
+            {/* Suggestions Dropdown */}
+            {suggestions.length > 0 && focus && (
+              <ul className="absolute rounded-xl bg-white    divide-y-2 divide-gray-200 p-1 z-50 mt-1 w-full shadow-lg">
+                {suggestions.slice(0, 5).map((location: any, index) => (
+                  <li
+                    key={index}
+                    className="p-2 text-wrap cursor-pointer hover:bg-gray-200"
+                    onClick={() => handleSelectLocation(location)}
+                  >
+                    {location.display_name}
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
+
+          <div>
+            <label
+              htmlFor="type"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Location Notes{" "}
+              <span className="text-sm text-gray-400 mb-1 font-bold">
+                (optional)
+              </span>
+            </label>
+            <input
+              type="text"
+              id="additionalInstructions"
+              name="additionalInstructions"
+              value={newReport.additionalInstructions}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300 "
+              placeholder="Make the locating easier"
+            />
+          </div>
+
           <div>
             <label
               htmlFor="type"
@@ -463,7 +537,7 @@ w-8 lg:h-12 lg:w-12 text-gray-400"
                     {report.amount}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {report.createdAt}
+                    {report.created_at}
                   </td>
                 </tr>
               ))}
