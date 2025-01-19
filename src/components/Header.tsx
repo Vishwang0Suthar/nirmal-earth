@@ -84,13 +84,15 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
 
   useEffect(() => {
     const init = async () => {
-      const storedEmail = localStorage.getItem("userEmail"); // Check if user exists in localStorage
+      // const storedEmail = localStorage.getItem("userEmail"); // Check if user exists in localStorage
 
-      if (storedEmail) {
-        setLoggedIn(true);
-        setLoading(false);
-        return; // Exit early if user is already stored
-      }
+      // // if (storedEmail) {
+      // //   setLoggedIn(true);
+      // //   setLoading(false);
+      // //   const user = await web3auth.getUserInfo();
+      // //   setUserInfo(user);
+      // //   return; // Exit early if user is already stored
+      // // }
 
       try {
         await web3auth.initModal();

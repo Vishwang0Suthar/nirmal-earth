@@ -1,6 +1,15 @@
 "use client";
 import { useState, useCallback, useEffect } from "react";
-import { MapPin, Upload, CheckCircle, Loader } from "lucide-react";
+import {
+  MapPin,
+  Upload,
+  CheckCircle,
+  Loader,
+  PinIcon,
+  Pin,
+  Locate,
+  LocateFixed,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { StandaloneSearchBox, useJsApiLoader } from "@react-google-maps/api";
@@ -94,23 +103,33 @@ const Report = () => {
     const { name, value } = e.target;
 
     if (name === "location") {
-      setSearchText(value); // Update search text for location
+      setSearchText(value);
+      // Update both states to keep them synchronized
+      setNewReport((prev) => ({
+        ...prev,
+        location: value,
+      }));
+    } else {
+      setNewReport((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
-
-    setNewReport((prev) => ({
-      ...prev,
-      [name]: value, // Update the correct field dynamically
-    }));
   };
 
   const handleSelectLocation = (location: any) => {
-    setSearchText(location.display_name);
+    const displayName = location.display_name;
+
+    // Update both states
+    setSearchText(displayName);
     setNewReport((prev) => ({
-      ...prev, // Preserve existing fields
-      location: location.display_name, // Update only location
+      ...prev,
+      location: displayName,
     }));
-    setSearchText(location.display_name);
-    setSuggestions([]); // Clear suggestions after selection
+
+    // Clear suggestions and close dropdown
+    setSuggestions([]);
+    setFocus(false);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -398,8 +417,8 @@ w-8 lg:h-12 lg:w-12 text-gray-400"
               id="location"
               name="location"
               onFocus={() => setFocus(true)}
-              onBlur={() => setFocus(false)}
-              value={searchText}
+              onBlur={() => setTimeout(() => setFocus(false), 200)} // Delayed blur to allow click event
+              value={newReport.location || searchText} // Use newReport.location as primary source
               onChange={handleInputChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
@@ -408,15 +427,18 @@ w-8 lg:h-12 lg:w-12 text-gray-400"
 
             {/* Suggestions Dropdown */}
             {suggestions.length > 0 && focus && (
-              <ul className="absolute rounded-xl bg-white    divide-y-2 divide-gray-200 p-1 z-50 mt-1 w-full shadow-lg">
+              <ul className="absolute rounded-xl bg-white divide-y-2 divide-gray-200 p-1 z-50 mt-1 w-full shadow-lg">
                 {suggestions.slice(0, 5).map((location: any, index) => (
-                  <li
+                  <div
                     key={index}
-                    className="p-2 text-wrap cursor-pointer hover:bg-gray-200"
+                    className="flex hover:bg-gray-200 items-center cursor-pointer"
                     onClick={() => handleSelectLocation(location)}
                   >
-                    {location.display_name}
-                  </li>
+                    <MapPin className="min-w-6 h-6 text-green-600" />
+                    <li className="p-2 flex-1 text-wrap">
+                      {location.display_name}
+                    </li>
+                  </div>
                 ))}
               </ul>
             )}
@@ -503,7 +525,7 @@ w-8 lg:h-12 lg:w-12 text-gray-400"
       </h2>
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div className="max-h-96 overflow-y-auto">
-          <table className="lg:w-full max-w-sm">
+          <table className="lg:max-w-full max-w-sm">
             <thead className="bg-gray-50 sticky top-0">
               <tr>
                 <th className="lg:px-6 px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -524,13 +546,13 @@ w-8 lg:h-12 lg:w-12 text-gray-400"
               {reports.map((report) => (
                 <tr
                   key={report.id}
-                  className="hover:bg-gray-50 transition-colors duration-200"
+                  className="hover:bg-gray-50  transition-colors duration-200"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">
                     <MapPin className="inline-block w-4 h-4 mr-2 text-green-500" />
                     {report.location}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">
                     {report.wasteType}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

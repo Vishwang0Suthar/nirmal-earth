@@ -26,7 +26,7 @@ import {
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Make sure to set your Gemini API key in your environment variables
-const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+const geminiApiKey = process.env.GEMINI_API_KEY;
 
 type CollectionTask = {
   id: number;
@@ -183,7 +183,8 @@ export default function CollectPage() {
       const text = response.text();
 
       try {
-        const parsedResult = JSON.parse(text);
+        const cleanedText = text.replace(/```json\n|\n```/g, "").trim();
+        const parsedResult = JSON.parse(cleanedText);
         setVerificationResult({
           wasteTypeMatch: parsedResult.wasteTypeMatch,
           quantityMatch: parsedResult.quantityMatch,

@@ -4,6 +4,7 @@ import ImpactCard from "@/components/home/ImpactCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Coins, Leaf, MapPin, Recycle, Users } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect } from "react";
 
 // export const metadata: Metadata = {
@@ -75,18 +76,20 @@ export default function Home() {
               Join our community in making waste management more efficient and
               sustainable.
             </p>
-            <Button className="bg-green-600  overflow-hidden group hover:bg-green-600 shadow-inner relative group  rounded-full text-white text-lg py-6 px-10">
-              <div className="overflow-hidden z-10 h-8 transition-all duration-300 ">
-                <p className="group-hover:-translate-y-7 transition-all duration-300 ease-in-out">
-                  Report Waste
-                </p>
-                <p className="group-hover:-translate-y-7 transition-all duration-300 ease-in-out">
-                  Report Waste
-                </p>
-              </div>
-              <div className="h-64 aspect-square rounded-full group-hover:-translate-y-12 transition-all duration-700 ease-in-out translate-y-12 top-0  bg-green-700 absolute"></div>
-              <ArrowRight className="w-6 absolute right-3  h-6 ml-2" />
-            </Button>
+            <Link href={"/reports"}>
+              <Button className="bg-green-600  overflow-hidden group hover:bg-green-600 shadow-inner relative group  rounded-full text-white text-lg py-6 px-10">
+                <div className="overflow-hidden z-10 h-8 transition-all duration-300 ">
+                  <p className="group-hover:-translate-y-7 transition-all duration-300 ease-in-out">
+                    Report Waste
+                  </p>
+                  <p className="group-hover:-translate-y-7 transition-all duration-300 ease-in-out">
+                    Report Waste
+                  </p>
+                </div>
+                <div className="h-64 aspect-square rounded-full group-hover:-translate-y-12 transition-all duration-700 ease-in-out translate-y-12 top-0  bg-green-700 absolute"></div>
+                <ArrowRight className="w-6 absolute right-3  h-6 ml-2" />
+              </Button>
+            </Link>
           </h1>
         </section>
 
