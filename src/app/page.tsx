@@ -69,31 +69,40 @@ export default function Home() {
       <div className="container mx-auto px-4 py-16">
         <section className="text-center mb-20">
           <AnimatedGlobe />
-          <h1 className="text-6xl font-bold text-gray-800 tracking-tight">
+          <h1 className="md:text-6xl text-3xl font-bold text-gray-800 tracking-tight">
             Nirmal Earth{" "}
             <span className="text-green-600">Waste Management</span>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
+            <p className="md:text-xl text-sm text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
               Join our community in making waste management more efficient and
               sustainable.
             </p>
-            <Link href={"/reports"}>
-              <Button className="bg-green-600  overflow-hidden group hover:bg-green-600 shadow-inner relative group  rounded-full text-white text-lg py-6 px-10">
-                <div className="overflow-hidden z-10 h-8 transition-all duration-300 ">
-                  <p className="group-hover:-translate-y-7 transition-all duration-300 ease-in-out">
+            <Link
+              className="relative flex items-center justify-center"
+              href={"/reports"}
+            >
+              <Button className="bg-green-600 z-10 shadow-inner overflow-hidden group hover:bg-green-600 duration-500 ease-in-out transition-all hover:translate-x-1 hover:translate-y-1  relative group  rounded-full text-white text-lg py-6 px-10">
+                <div className="overflow-hidden z-10 flex flex-col items-center h-10 transition-all duration-300 ">
+                  <p className="group-hover:-translate-y-8 p-1 transition-all duration-300 ease-in-out">
                     Report Waste
                   </p>
-                  <p className="group-hover:-translate-y-7 transition-all duration-300 ease-in-out">
+                  <p className="group-hover:-translate-y-8 p-1 transition-all duration-300 ease-in-out">
                     Report Waste
                   </p>
                 </div>
                 <div className="h-64 aspect-square rounded-full group-hover:-translate-y-12 transition-all duration-700 ease-in-out translate-y-12 top-0  bg-green-700 absolute"></div>
+
                 <ArrowRight className="w-6 absolute right-3  h-6 ml-2" />
+              </Button>
+              <Button className="absolute top-0 bg-black overflow-hidden text-lg text-black h-8 translate-x-1 translate-y-1   rounded-full   py-6 px-10">
+                <div className=" z-10 h-8  ">
+                  <p className=" p-1 ">Report Waste</p>
+                </div>
               </Button>
             </Link>
           </h1>
         </section>
 
-        <section className="grid  md:grid-cols-3 gap-10 mb-20">
+        <section className="grid  md:grid-cols-3  gap-10 mb-20">
           <FeatureCard
             Icon={Leaf}
             title="Eco-Friendly"

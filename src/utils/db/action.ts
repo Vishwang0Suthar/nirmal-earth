@@ -357,6 +357,37 @@ export async function getRewardTransactions(user_id: number) {
   }
 }
 
+export async function getRecentTransactions() {
+  try {
+    // console.log('Fetching transactions for user ID:', user_id)
+    const transactions = await db
+      .select({
+        id: Transactions.id,
+        type: Transactions.type,
+        amount: Transactions.amount,
+        description: Transactions.description,
+        date: Transactions.date,
+        user: Users.name,      })
+      .from(Transactions)
+      .innerJoin(Users, eq(Transactions.user_id, Users.id))
+      .orderBy(desc(Transactions.date))
+      .limit(10)
+      .execute();
+
+
+    const formattedTransactions = transactions.map(t => ({
+      ...t,
+      date: t.date.toISOString().split('T')[0], // Format date as YYYY-MM-DD
+    }));
+
+    console.log('Formatted transactions:', formattedTransactions)
+    return formattedTransactions;
+  } catch (error) {
+    console.error("Error fetching reward transactions:", error);
+    return [];
+  }
+}
+
 export async function getAvailableRewards(user_id: number) {
   try {
     console.log('Fetching available rewards for user:', user_id);
