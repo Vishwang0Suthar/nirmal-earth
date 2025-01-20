@@ -25,6 +25,10 @@ body {
   color: white;
 }
 
+.body {
+  background: #EFE3C2;
+}
+
 @layer base {
   :root {
 

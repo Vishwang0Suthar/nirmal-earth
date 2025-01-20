@@ -20,7 +20,7 @@ const Sidebar = ({ open }: SidebarProps) => {
   const pathname = usePathname();
   return (
     <aside
-      className={`bg-white justify-between flex flex-col items-stretch border-r pt-20 border-gray-200 lg:left-0 lg:translate-x-0  text-gray-800 w-64 fixed h-full z-30 inset-y-0 transition-all duration-300 ${
+      className={`bg-white justify-between flex flex-col items-stretch pt-20 border-r  border-gray-200 lg:left-0 lg:translate-x-0  text-gray-800 w-64 fixed h-full z-30 inset-y-0 transition-all duration-300 ${
         open ? "left-0" : "-left-64"
       }`}
     >

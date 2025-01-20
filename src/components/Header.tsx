@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
+import { formatDistanceToNow } from "date-fns";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +24,7 @@ import {
   LogOut,
   Earth,
 } from "lucide-react";
+// import { OpenloginAdapter } from "@web3auth/openlogin";
 
 import { Badge } from "./ui/badge";
 import { Web3Auth } from "@web3auth/modal";
@@ -30,16 +33,24 @@ import {
   EthereumPrivateKeyProvider,
   EthereumPrivateProvider,
 } from "@web3auth/ethereum-provider";
-import { cosineDistance } from "drizzle-orm";
+import { cosineDistance, is } from "drizzle-orm";
 import { log } from "console";
 import {
   createUser,
+  getRecentTransactions,
   getUnreadNotifications,
   getUserBalance,
   getUserByEmail,
   markNotificationAsRead,
 } from "../utils/db/action";
 import useMediaQuery from "@/hooks/useMediaQuery";
+
+// const openloginAdapter = new OpenloginAdapter({
+//   privateKeyProvider,
+//   adapterSettings: {
+//     uxMode: "redirect",
+//   },
+// });
 
 const clientId =
   "BJKdDFkNtkWX87XqkuWrDu4rbkSvWyQZ5lswS0ucINxxcN0inRVW8zzKAywPPzgiOHP7_3PcfFwfpvcQvSdaLRs";
@@ -65,6 +76,15 @@ const web3auth = new Web3Auth({
   privateKeyProvider,
 });
 
+type Transaction = {
+  id: number;
+  type: "earned_report" | "earned_collect" | "redeemed";
+  amount: number;
+  description: string;
+  date: string;
+  user: string;
+};
+
 interface HeaderProps {
   onMenuClick: () => void;
   totalEarnings: number;
@@ -79,21 +99,11 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [balance, setBalance] = useState(0);
-
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   // console.log("user info", userInfo);
 
   useEffect(() => {
     const init = async () => {
-      // const storedEmail = localStorage.getItem("userEmail"); // Check if user exists in localStorage
-
-      // // if (storedEmail) {
-      // //   setLoggedIn(true);
-      // //   setLoading(false);
-      // //   const user = await web3auth.getUserInfo();
-      // //   setUserInfo(user);
-      // //   return; // Exit early if user is already stored
-      // // }
-
       try {
         await web3auth.initModal();
         setProvider(web3auth.provider);
@@ -104,11 +114,26 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
           setUserInfo(user);
 
           if (user.email) {
-            localStorage.setItem("userEmail", user.email); // Store user email
+            localStorage.setItem("userEmail", user.email);
+
             try {
-              await createUser(user.email, user.name || "Anonymous User"); // Create user only if not stored
+              // First check if user exists
+              const existingUser = await getUserByEmail(user.email);
+
+              // Only create user if they don't exist
+              if (!existingUser) {
+                await createUser(user.email, user.name || "Anonymous User");
+              }
             } catch (error) {
-              console.error("Error creating user:", error);
+              // Check if error is not the unique constraint error
+              if (
+                !(
+                  error instanceof Error &&
+                  error.message.includes("unique constraint")
+                )
+              ) {
+                console.error("Error handling user data:", error);
+              }
             }
           }
         }
@@ -185,11 +210,17 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
       setUserInfo(user);
       if (user.email) {
         localStorage.setItem("userEmail", user.email);
-        try {
-          await createUser(user.email, user.name || "Anonymous User");
-        } catch (error) {
-          console.error("Error creating user:", error);
-          // Handle the error appropriately, maybe show a message to the user
+
+        // Check if the user already exists before creating a new one
+        const existingUser = await getUserByEmail(user.email);
+        if (!existingUser) {
+          try {
+            await createUser(user.email, user.name || "Anonymous User");
+          } catch (error) {
+            console.error("Error creating user:", error);
+          }
+        } else {
+          console.log("User already exists.");
         }
       }
     } catch (error) {
@@ -229,6 +260,19 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
     }
   };
 
+  useEffect(() => {
+    const fetchRecentTransaction = async () => {
+      setLoading(true);
+      try {
+        const fetchedTransaction = await getRecentTransactions();
+        setTransactions(fetchedTransaction as Transaction[]);
+      } catch (error) {
+        console.error("Error fetching user data and rewards:", error);
+      }
+    };
+    fetchRecentTransaction();
+  }, []);
+
   const handleNotificationClick = async (notificationId: number) => {
     await markNotificationAsRead(notificationId);
     setNotifications((prevNotifications) =>
@@ -243,8 +287,8 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   }
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="flex items-center justify-between  px-4 py-2">
+    <header className="bg-white flex flex-col sticky top-0 z-50">
+      <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2">
         <div className="flex items-center ">
           <Button
             variant="ghost"
@@ -256,7 +300,9 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
           </Button>
           <Link className="flex items-center " href="/">
             <Earth className="h-6 w-6 text-primary md:w-8 text-green-500 mr-1 md:mr-2" />
-            <span className="text-xl font-bold">Nirmal Earth</span>
+            {!isMobile && (
+              <span className="text-xl font-bold">Nirmal Earth</span>
+            )}
           </Link>
         </div>
         {!isMobile && (
@@ -271,12 +317,12 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
             </div>
           </div>
         )}
-        <div className="flex flex-row-reverse items-center">
-          {isMobile && (
+        <div className="flex items-center">
+          {/* {isMobile && (
             <Button variant="ghost" size="icon" className="mr-2 ">
               <Search className="h-5 w-5 text-gray-800" />
             </Button>
-          )}
+          )} */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="mr-2 relative">
@@ -318,7 +364,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
           <div className="flex border-2 border-green-800 hover:shadow-3xl duration-300 hover:shadow-green-300 items-center gap-2 bg-gray-100 rounded-full px-2 md:px-3 py-1 mr-2 md:mr-4">
             <Coins className="h-4 md:h-5 w-4 md:w-5 text-green-400" />
             <span className="text-sm font-semibold md:text-base text-gray-800">
-              {balance.toFixed(2)} points
+              {balance.toFixed(2)} {!isMobile && `points`}
             </span>
           </div>
           {!loggedIn ? (
@@ -362,6 +408,37 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
             </>
           )}
         </div>
+      </div>
+      <div className="bg-green-700 h-fit w-full">
+        {/*  */}
+        <marquee behavior="scroll" direction="left" scrollamount="5">
+          <div className="text-[#FFFBCA] items-center font-mono z-50 flex">
+            {transactions.length > 0 ? (
+              transactions.slice(0, 6).map((transaction, index) => (
+                <React.Fragment key={index}>
+                  <p className="">
+                    {transaction.user.replace("@gmail.com", "")}{" "}
+                    {transaction.type === "earned_report"
+                      ? "earned"
+                      : transaction.type === "redeemed"
+                      ? "redeemed"
+                      : transaction.type === "earned_collect"
+                      ? "collected"
+                      : ""}{" "}
+                    {transaction.amount}-points{" "}
+                    {formatDistanceToNow(new Date(transaction.date), {
+                      addSuffix: true,
+                    })}
+                  </p>
+                  <pre className=""> | </pre>
+                </React.Fragment>
+              ))
+            ) : (
+              <p>No transactions found</p>
+            )}
+          </div>
+        </marquee>
+        {/* </marquee> */}
       </div>
     </header>
   );
