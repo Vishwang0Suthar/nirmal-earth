@@ -8,7 +8,6 @@ import {
   getWasteCollectionTasks,
 } from "@/utils/db/action";
 import { ArrowRight, Coins, Leaf, MapPin, Recycle, Users } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
