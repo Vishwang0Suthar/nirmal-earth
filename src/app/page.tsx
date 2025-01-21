@@ -2,10 +2,15 @@
 import FeatureCard from "@/components/home/FeatureCard";
 import ImpactCard from "@/components/home/ImpactCard";
 import { Button } from "@/components/ui/button";
+import {
+  getAllRewards,
+  getRecentReports,
+  getWasteCollectionTasks,
+} from "@/utils/db/action";
 import { ArrowRight, Coins, Leaf, MapPin, Recycle, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // export const metadata: Metadata = {
 //   title: "NIRMAL-EARTH",
@@ -25,45 +30,51 @@ function AnimatedGlobe() {
 }
 
 export default function Home() {
-  // useEffect(() => {
-  //   async function fetchImpactData() {
-  //     try {
-  //       const reports = await getRecentReports(100); // Fetch last 100 reports
-  //       const rewards = await getAllRewards();
-  //       const tasks = await getWasteCollectionTasks(100); // Fetch last 100 tasks
+  const [impactData, setImpactData] = useState({
+    wasteCollected: 0,
+    reportsSubmitted: 0,
+    tokensEarned: 0,
+    co2Offset: 0,
+  });
+  useEffect(() => {
+    async function fetchImpactData() {
+      try {
+        const reports = await getRecentReports(100); // Fetch last 100 reports
+        const rewards = await getAllRewards();
+        const tasks = await getWasteCollectionTasks(100); // Fetch last 100 tasks
 
-  //       const wasteCollected = tasks.reduce((total, task) => {
-  //         const match = task.amount.match(/(\d+(\.\d+)?)/);
-  //         const amount = match ? parseFloat(match[0]) : 0;
-  //         return total + amount;
-  //       }, 0);
+        const wasteCollected = tasks.reduce((total, task) => {
+          const match = task.amount.match(/(\d+(\.\d+)?)/);
+          const amount = match ? parseFloat(match[0]) : 0;
+          return total + amount;
+        }, 0);
 
-  //       const reportsSubmitted = reports.length;
-  //       const tokensEarned = rewards.reduce(
-  //         (total, reward) => total + (reward.points || 0),
-  //         0
-  //       );
-  //       const co2Offset = wasteCollected * 0.5; // Assuming 0.5 kg CO2 offset per kg of waste
+        const reportsSubmitted = reports.length;
+        const tokensEarned = rewards.reduce(
+          (total, reward) => total + (reward.points || 0),
+          0
+        );
+        const co2Offset = wasteCollected * 0.5; // Assuming 0.5 kg CO2 offset per kg of waste
 
-  //       setImpactData({
-  //         wasteCollected: Math.round(wasteCollected * 10) / 10, // Round to 1 decimal place
-  //         reportsSubmitted,
-  //         tokensEarned,
-  //         co2Offset: Math.round(co2Offset * 10) / 10, // Round to 1 decimal place
-  //       });
-  //     } catch (error) {
-  //       console.error("Error fetching impact data:", error);
-  //       // Set default values in case of error
-  //       setImpactData({
-  //         wasteCollected: 0,
-  //         reportsSubmitted: 0,
-  //         tokensEarned: 0,
-  //         co2Offset: 0,
-  //       });
-  //     }
-  //   }
-  //   fetchImpactData();
-  // }, []);
+        setImpactData({
+          wasteCollected: Math.round(wasteCollected * 10) / 10, // Round to 1 decimal place
+          reportsSubmitted,
+          tokensEarned,
+          co2Offset: Math.round(co2Offset * 10) / 10, // Round to 1 decimal place
+        });
+      } catch (error) {
+        console.error("Error fetching impact data:", error);
+        // Set default values in case of error
+        setImpactData({
+          wasteCollected: 0,
+          reportsSubmitted: 0,
+          tokensEarned: 0,
+          co2Offset: 0,
+        });
+      }
+    }
+    fetchImpactData();
+  }, []);
   return (
     <>
       <div className="container mx-auto px-4 py-16">
@@ -125,7 +136,7 @@ export default function Home() {
             Our Impact
           </h2>
           <div className="grid md:grid-cols-4 gap-6">
-            {/* <ImpactCard
+            <ImpactCard
               title="Waste Collected"
               value={`${impactData.wasteCollected} kg`}
               Icon={Recycle}
@@ -144,11 +155,11 @@ export default function Home() {
               title="CO2 Offset"
               value={`${impactData.co2Offset} kg`}
               Icon={Leaf}
-            /> */}
-            <ImpactCard title="Waste Collected" value="50kg" Icon={Recycle} />
+            />
+            {/* <ImpactCard title="Waste Collected" value="50kg" Icon={Recycle} />
             <ImpactCard title="Reports Submitted" value="20kg" Icon={MapPin} />
             <ImpactCard title="Tokens Earned" value="20kg" Icon={Coins} />
-            <ImpactCard title="CO2 Offset" value="50kg" Icon={Leaf} />
+            <ImpactCard title="CO2 Offset" value="50kg" Icon={Leaf} /> */}
           </div>
         </section>
       </div>
