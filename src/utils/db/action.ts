@@ -1,6 +1,6 @@
 import { db } from './dbConfig';
 import { Users, Reports, Rewards, CollectedWastes, Notifications, Transactions } from './schema';
-import { eq, sql, and, desc, ne } from 'drizzle-orm';
+import { eq, sql, and, desc } from 'drizzle-orm';
 
 export async function createUser(email: string, name: string) {
   try {
@@ -111,7 +111,7 @@ export async function updateRewardPoints(user_id: number, pointsToAdd: number) {
   }
 }
 
-export async function createCollectedWaste(reportId: number, collectorId: number, notes?: string) {
+export async function createCollectedWaste(reportId: number, collectorId: number) {
   try {
     const [collectedWaste] = await db
       .insert(CollectedWastes)
@@ -264,7 +264,7 @@ export async function saveReward(user_id: number, amount: number) {
   }
 }
 
-export async function saveCollectedWaste(reportId: number, collectorId: number, verificationResult: any) {
+export async function saveCollectedWaste(reportId: number, collectorId: number) {
   try {
     const [collectedWaste] = await db
       .insert(CollectedWastes)

@@ -15,13 +15,11 @@ import {
 import {
   Menu,
   Coins,
-  Leaf,
   Search,
   Bell,
   User,
   ChevronDown,
   LogIn,
-  LogOut,
   Earth,
 } from "lucide-react";
 // import { OpenloginAdapter } from "@web3auth/openlogin";
@@ -29,12 +27,9 @@ import {
 import { Badge } from "./ui/badge";
 import { Web3Auth } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
-import {
-  EthereumPrivateKeyProvider,
-  EthereumPrivateProvider,
-} from "@web3auth/ethereum-provider";
-import { cosineDistance, is } from "drizzle-orm";
-import { log } from "console";
+import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
+// import { cosineDistance, is } from "drizzle-orm";
+// import { log } from "console";
 import {
   createUser,
   getRecentTransactions,
@@ -95,7 +90,6 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null);
-  const pathname = usePathname();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [balance, setBalance] = useState(0);
@@ -244,21 +238,21 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
     }
   };
 
-  const getUserInfo = async () => {
-    if (web3auth.connected) {
-      const user = await web3auth.getUserInfo();
-      setUserInfo(user);
-      if (user.email) {
-        localStorage.setItem("userEmail", user.email);
-        try {
-          await createUser(user.email, user.name || "Anonymous User");
-        } catch (error) {
-          console.error("Error creating user:", error);
-          // Handle the error appropriately, maybe show a message to the user
-        }
-      }
-    }
-  };
+  // const getUserInfo = async () => {
+  //   if (web3auth.connected) {
+  //     const user = await web3auth.getUserInfo();
+  //     setUserInfo(user);
+  //     if (user.email) {
+  //       localStorage.setItem("userEmail", user.email);
+  //       try {
+  //         await createUser(user.email, user.name || "Anonymous User");
+  //       } catch (error) {
+  //         console.error("Error creating user:", error);
+  //         // Handle the error appropriately, maybe show a message to the user
+  //       }
+  //     }
+  //   }
+  // };
 
   useEffect(() => {
     const fetchRecentTransaction = async () => {
@@ -330,8 +324,8 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
                 {notifications.length > 0 && (
                   <Badge
                     className="absolute -top-1 -right-1 px-1 min-w-[1.2rem] h-5"
-                    variant="danger"
-                    size="sm"
+                    variant="destructive"
+                    // size="sm"
                   >
                     {notifications.length}
                   </Badge>
