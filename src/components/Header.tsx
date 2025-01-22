@@ -2,7 +2,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
 import { formatDistanceToNow } from "date-fns";
 
@@ -80,12 +79,18 @@ type Transaction = {
   user: string;
 };
 
+type Notification = {
+  id: number;
+  message: string;
+  created_at: string; // Assuming it's an ISO date string
+};
+
 interface HeaderProps {
   onMenuClick: () => void;
   totalEarnings: number;
 }
 
-export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
+export default function Header({ onMenuClick }: HeaderProps) {
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -101,6 +106,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
       try {
         await web3auth.initModal();
         setProvider(web3auth.provider);
+        console.log(provider);
 
         if (web3auth.connected) {
           setLoggedIn(true);
@@ -334,7 +340,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
               {notifications.length > 0 ? (
-                notifications.map((notification: any) => (
+                notifications.map((notification: Notification) => (
                   <DropdownMenuItem
                     key={notification.id}
                     className="flex items-center justify-between px-4 py-2 hover:bg-gray-100"
