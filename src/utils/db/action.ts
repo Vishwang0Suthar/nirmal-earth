@@ -283,9 +283,19 @@ export async function saveCollectedWaste(reportId: number, collectorId: number) 
   }
 }
 
-export async function updateTaskStatus(reportId: number, newStatus: string, collectorId?: number) {
+type UpdateData = {
+  status: string;
+  collectorId?: number;
+};
+
+
+export async function updateTaskStatus(
+  reportId: number,
+  newStatus: string,
+  collectorId?: number
+) {
   try {
-    const updateData: any = { status: newStatus };
+    const updateData: UpdateData = { status: newStatus };
     if (collectorId !== undefined) {
       updateData.collectorId = collectorId;
     }
@@ -301,6 +311,7 @@ export async function updateTaskStatus(reportId: number, newStatus: string, coll
     throw error;
   }
 }
+
 
 export async function getAllRewards() {
   try {
@@ -448,10 +459,16 @@ export async function createTransaction(user_id: number, type: 'earned_report' |
     throw error;
   }
 }
+interface UserReward {
+  id: number;
+  user_id: number;
+  points: number;
+  updated_at: Date;
+}
 
 export async function redeemReward(user_id: number, rewardId: number) {
   try {
-    const userReward = await getOrCreateReward(user_id) as any;
+    const userReward = (await getOrCreateReward(user_id)) as UserReward;
     
     if (rewardId === 0) {
       // Redeem all points
@@ -495,6 +512,7 @@ export async function redeemReward(user_id: number, rewardId: number) {
     throw error;
   }
 }
+
 
 export async function getUserBalance(user_id: number): Promise<number> {
   const transactions = await getRewardTransactions(user_id);

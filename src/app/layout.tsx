@@ -10,6 +10,14 @@ import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { getAvailableRewards, getUserByEmail } from "@/utils/db/action";
 
+interface Reward {
+  id: number;
+  name: string;
+  cost: number;
+  description: string | null;
+  collectionInfo: string;
+}
+
 const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
@@ -29,9 +37,9 @@ export default function RootLayout({
           console.log("user from layout", user);
 
           if (user) {
-            const availableRewards = (await getAvailableRewards(
+            const availableRewards: Reward[] = await getAvailableRewards(
               user.id
-            )) as any;
+            );
             console.log("availableRewards from layout", availableRewards);
             setTotalEarnings(availableRewards);
           }
