@@ -21,12 +21,12 @@ body {
 } */
 
 ::selection {
-  background: #16a34a;
-  color: white;
+  background: #dcfce7;
+  /* color: white; */
 }
 
 .body {
-  background: #EFE3C2;
+  background: white;
 }
 
 @layer base {
