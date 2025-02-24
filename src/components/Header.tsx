@@ -290,22 +290,26 @@ export default function Header({ onMenuClick }: HeaderProps) {
     <header className="bg-white flex flex-col sticky top-0 z-50">
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2">
         <div className="flex items-center ">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="mr-2  md:mr-4"
-            onClick={onMenuClick}
-          >
-            <Menu className="h-6 w-6 text-gray-800" />
-          </Button>
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="mr-2  md:mr-4"
+              onClick={onMenuClick}
+            >
+              <Menu className="h-6 w-6 text-gray-800" />
+            </Button>
+          )}
           <Link className="flex items-center " href="/">
             <Earth className="h-6 w-6 text-primary md:w-8 text-green-500 mr-1 md:mr-2" />
             {!isMobile && (
-              <span className="text-xl font-bold">Nirmal Earth</span>
+              <span className="text-xl md:text-2xl font-bold">
+                Nirmal Earth
+              </span>
             )}
           </Link>
         </div>
-        {!isMobile && (
+        {/* {!isMobile && (
           <div className="flex-1  max-w-xl mx-4">
             <div className=" relative ">
               <input
@@ -316,7 +320,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
               <Search className="absolute transition-all peer-focus:text-gray-300 right-3 top-1/2 h-6 w-6 transform -translate-y-1/2 text-gray-800" />
             </div>
           </div>
-        )}
+        )} */}
         <div className="flex items-center">
           {/* {isMobile && (
             <Button variant="ghost" size="icon" className="mr-2 ">
