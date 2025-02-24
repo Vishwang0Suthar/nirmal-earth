@@ -226,6 +226,7 @@ export async function getWasteCollectionTasks(limit: number = 20) {
         collectorId: Reports.collectorId,
       })
       .from(Reports)
+      .orderBy(desc(Reports.created_at))
       .limit(limit)
       .execute();
 

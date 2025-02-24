@@ -11,6 +11,7 @@ import {
 } from "@/utils/db/action";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import LocationSearch from "@/components/Mapinput";
 
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org/search?";
@@ -168,15 +169,24 @@ const Report = () => {
 
       const prompt = `You are an expert in waste management and recycling. Analyze this image and provide:
         1. The type of waste (e.g., plastic, paper, glass, metal, organic)
-        2. An estimate of the quantity or amount (in kg or liters)
+        2. An estimate of the quantity or amount for that follow these instructions :
+            - try to identify the objects in the image (example:banana-peel)
+            - get the approximate weight of individual object(aproxx-weight:180 g)
+            - do this for each object
+            - add weights you get from all the object you get from the image 
         3. Your confidence level in this assessment (as a percentage)
         
         Respond in JSON format like this:
         {
+          "isWaste":return true if waste detected else false
           "wasteType": "type of waste",
-          "quantity": "estimated quantity with unit",
+          "items":"items present along with their weights as text"
+          "quantity": "estimated quantity with unit as either kg's or litres",
           "confidence": confidence level as a number between 0 and 1
-        }`;
+        }
+          
+        also for quantity keep the answer in following format
+        "Approximate weight:"`;
 
       const result = await model.generateContent([prompt, ...imageParts]);
       const response = await result.response;
@@ -185,28 +195,35 @@ const Report = () => {
       try {
         const cleanText = text.replace(/```json|```/g, "").trim();
         const parsedResult = JSON.parse(cleanText);
+        console.log(parsedResult.isWaste);
 
-        if (!parsedResult || typeof parsedResult !== "object") {
-          throw new Error("Invalid response format");
+        if (parsedResult.isWaste === false) {
+          setVerificationStatus("failure");
+          toast.error("No waste found. Please try again.");
+        } else {
+          if (!parsedResult || typeof parsedResult !== "object") {
+            throw new Error("Invalid response format");
+          }
+
+          if (
+            !parsedResult.wasteType ||
+            !parsedResult.quantity ||
+            typeof parsedResult.confidence !== "number"
+          ) {
+            throw new Error("Missing required fields in verification result");
+          }
+
+          setVerificationResult(parsedResult);
+          setVerificationStatus("success");
+          setNewReport((prev) => ({
+            ...prev,
+            type: parsedResult.wasteType,
+            amount: parsedResult.quantity,
+          }));
+          console.log(parsedResult.items);
+
+          toast.success("Waste verification successful!");
         }
-
-        if (
-          !parsedResult.wasteType ||
-          !parsedResult.quantity ||
-          typeof parsedResult.confidence !== "number"
-        ) {
-          throw new Error("Missing required fields in verification result");
-        }
-
-        setVerificationResult(parsedResult);
-        setVerificationStatus("success");
-        setNewReport((prev) => ({
-          ...prev,
-          type: parsedResult.wasteType,
-          amount: parsedResult.quantity,
-        }));
-
-        toast.success("Waste verification successful!");
       } catch (error) {
         console.error("Failed to parse verification result:", error);
         setVerificationStatus("failure");
@@ -429,7 +446,7 @@ w-8 lg:h-12 lg:w-12 text-gray-400"
               </ul>
             )}
           </div>
-
+          <LocationSearch />
           <div>
             <label
               htmlFor="type"

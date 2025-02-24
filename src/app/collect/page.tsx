@@ -272,13 +272,19 @@ export default function CollectPage() {
             {paginatedTasks.map((task) => (
               <div
                 key={task.id}
-                className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
+                className="bg-white p-4 relative rounded-lg shadow-sm border border-gray-200"
               >
+                <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 bg-green-600 flex text-xs font-semibold text-white rounded-3xl p-2">
+                  <p>5 mins ago</p>
+                </div>
                 <div className="flex justify-between items-center mb-2">
-                  <h2 className="text-lg font-medium text-gray-800 flex items-center">
-                    <MapPin className="w-5 h-5 mr-2 text-gray-500" />
-                    {task.location}
-                  </h2>
+                  <div className="flex  items-start">
+                    <MapPin className="min-w-5 mt-1 h-5 mr-2  text-gray-500" />
+
+                    <h2 className="text-lg font-medium text-gray-800 flex items-center">
+                      {task.location}
+                    </h2>
+                  </div>
                   <StatusBadge status={task.status} />
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-sm text-gray-600 mb-3">
