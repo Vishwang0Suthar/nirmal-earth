@@ -6,9 +6,9 @@ import { toast } from "react-hot-toast";
 
 type Reward = {
   id: number;
-  userId: number;
-  points: number;
-  level: number;
+  user_id: number;
+  totalPoints: number;
+  maxLevel: number;
   createdAt: Date;
   userName: string | null;
 };
@@ -53,8 +53,8 @@ export default function LeaderboardPage() {
 
   return (
     <div className="">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-semibold mb-6 text-gray-800">
+      <div className="max-w-3xl min-w-sm mx-auto">
+        <h1 className="md:text-3xl text-xl font-semibold mb-6 text-gray-800">
           Leaderboard{" "}
         </h1>
 
@@ -63,7 +63,7 @@ export default function LeaderboardPage() {
             <Loader className="animate-spin h-8 w-8 text-gray-600" />
           </div>
         ) : (
-          <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
+          <div className="bg-white shadow-xl w-fit rounded-2xl overflow-hidden">
             <div className="bg-gradient-to-r from-green-500 to-green-600 p-6">
               <div className="flex justify-between items-center text-white">
                 <Trophy className="h-10 w-10" />
@@ -72,19 +72,19 @@ export default function LeaderboardPage() {
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="md:w-full w-fit">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="md:px-6 px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Rank
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="md:px-6 px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       User
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="md:px-6 px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Points
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="md:px-6 px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Level
                     </th>
                   </tr>
@@ -97,7 +97,7 @@ export default function LeaderboardPage() {
                         user && user.id === reward.user_id ? "bg-indigo-50" : ""
                       } hover:bg-gray-50 transition-colors duration-150 ease-in-out`}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="md:px-6 px-3 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           {index < 3 ? (
                             <Crown
@@ -116,19 +116,19 @@ export default function LeaderboardPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="md:px-6 px-3 py-4 whitespace-nowrap">
                         <div className="flex items-center group">
                           <div className="flex-shrink-0 h-10 w-10">
                             <User className="h-full w-full rounded-full bg-gray-200 text-gray-500 p-2" />
                           </div>
                           <div className="ml-4 relative">
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm text-wrap font-medium text-gray-900">
                               {reward.userName}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="md:px-6 px-3 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <Award className="h-5 w-5 text-indigo-500 mr-2" />
                           <div className="text-sm font-semibold text-gray-900">
@@ -136,7 +136,7 @@ export default function LeaderboardPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="md:px-6 px-3 py-4 whitespace-nowrap">
                         <span className="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
                           Level {reward.maxLevel}
                         </span>
